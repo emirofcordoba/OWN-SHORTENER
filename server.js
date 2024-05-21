@@ -1,38 +1,41 @@
-var express = require('express');
-var bodyParser = require('body-parser');
-var fs = require('fs').promises;
-var path = require('path');
-var axios = require('axios');
-var app = express();
-var PORT = 3000;
-var filePath = 'first.json';
-var URLS_FILE = path.join(__dirname, 'urls.json');
-var fileContent = fs.readFile(filePath, 'utf8');
-var jsonData = JSON.parse(fileContent);
-var ownerChatId = jsonData[Object.keys(jsonData)[0]];
+ var express = require('express');
+ var bodyParser = require('body-parser');
+ var fs = require('fs').promises;
+ var path = require('path');
+ var axios = require('axios');
+ var TelegramBot = require('node-telegram-bot-api');
 
-async function readDomainDataFromFile() {
-    var domainData = await fs.readFile('domain.txt', 'utf8');
-    return domainData;
+ var app = express();
+ var PORT = 3000;
+ var filePath = 'first.txt'; // Rename first.json to first.txt
+ var URLS_FILE = path.join(__dirname, 'urls.json');
+
+async function readTextFile(filePath) {
+    try {
+         var fileContent = await fs.readFile(filePath, 'utf8');
+        return fileContent;
+    } catch (error) {
+        console.error('Error reading file:', error);
+        throw error;
+    }
 }
 
 app.use(bodyParser.json());
 
-var TelegramBot = require('node-telegram-bot-api');
-var CHANNEL_USERNAME = process.env.CHANNEL_USERNAME;
-var bot = new TelegramBot(process.env.TOKEN, { polling: true });
+ var CHANNEL_USERNAME = process.env.CHANNEL_USERNAME;
+ var bot = new TelegramBot(process.env.TOKEN, { polling: true });
 
-var joinChannelButton = {
+ var joinChannelButton = {
     text: 'JOIN CHANNEL👻',
     url: process.env.JOIN_CHANNEL_URL,
 };
-var joinedButton = {
+ var joinedButton = {
     text: 'JOINED🥁',
     callback_data: 'check_joined'
 };
 
 async function sendJoinChannelMessage(chatId) {
-    var options = {
+     var options = {
         parse_mode: 'HTML',
         reply_markup: {
             inline_keyboard: [
@@ -40,17 +43,17 @@ async function sendJoinChannelMessage(chatId) {
             ]
         }
     };
-    var message = "You can use this Telegram bot to shorten any link 🤩, but you're not joined to our channel. Please join and click 'Joined🙂'";
+     var message = "You can use this Telegram bot to shorten any link 🤩, but you're not joined to our channel. Please join and click 'Joined🙂'";
     await bot.sendMessage(chatId, `<pre>${message}</pre>`, options);
 }
 
 bot.on('message', async (msg) => {
-    var chatId = msg.chat.id;
+     var chatId = msg.chat.id;
 
     try {
         let chatIds;
         try {
-            var data = await fs.readFile(filePath, 'utf-8');
+             var data = await fs.readFile(filePath, 'utf-8');
             chatIds = JSON.parse(data);
         } catch (error) {
             if (error.code === 'ENOENT') {
@@ -63,12 +66,12 @@ bot.on('message', async (msg) => {
         if (chatIds.length === 0) {
             chatIds.push(chatId);
             await fs.writeFile(filePath, JSON.stringify(chatIds, null, 2));
-            var message = '<pre>Your chat ID has been recorded as the owner.</pre>';
+             var message = '<pre>Your chat ID has been recorded as the owner.</pre>';
             await bot.sendMessage(chatId, message, { parse_mode: 'HTML' });
         }
     } catch (error) {
         console.error('Error handling message:', error.message);
-        var errorMessage = '<pre>An error occurred while processing your request.</pre>';
+         var errorMessage = '<pre>An error occurred while processing your request.</pre>';
         await bot.sendMessage(chatId, errorMessage, { parse_mode: 'HTML' });
     }
 });
@@ -277,4 +280,4 @@ app.get('/', async (req, res) => {
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
-      
+        
