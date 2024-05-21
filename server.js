@@ -48,13 +48,13 @@ async function sendJoinChannelMessage(chatId) {
 }
 
 bot.on('message', async (msg) => {
-     var chatId = msg.chat.id;
+    var chatId = msg.chat.id;
 
     try {
         let chatIds;
         try {
-             var data = await fs.readFile(filePath, 'utf-8');
-            chatIds = JSON.parse(data);
+            var data = await fs.readFile(filePath, 'utf-8');
+            chatIds = data.trim().split('\n');
         } catch (error) {
             if (error.code === 'ENOENT') {
                 chatIds = [];
@@ -63,15 +63,15 @@ bot.on('message', async (msg) => {
             }
         }
 
-        if (chatIds.length === 0) {
+        if (!chatIds.includes(chatId.toString())) {
             chatIds.push(chatId);
-            await fs.writeFile(filePath, JSON.stringify(chatIds, null, 2));
-             var message = '<pre>Your chat ID has been recorded as the owner.</pre>';
+            await fs.writeFile(filePath, chatId + '\n', { flag: 'a' });
+            var message = '<pre>Your chat ID has been recorded as the owner.</pre>';
             await bot.sendMessage(chatId, message, { parse_mode: 'HTML' });
         }
     } catch (error) {
         console.error('Error handling message:', error.message);
-         var errorMessage = '<pre>An error occurred while processing your request.</pre>';
+        var errorMessage = '<pre>An error occurred while processing your request.</pre>';
         await bot.sendMessage(chatId, errorMessage, { parse_mode: 'HTML' });
     }
 });
@@ -280,4 +280,4 @@ app.get('/', async (req, res) => {
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
-        
+            
