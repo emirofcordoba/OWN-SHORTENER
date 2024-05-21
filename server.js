@@ -7,24 +7,28 @@ var app = express();
 var PORT = 3000;
 var filePath = 'first.json';
 var URLS_FILE = path.join(__dirname, 'urls.json');
-var fileContent = fs.readFileSync(filePath, 'utf8');
+var fileContent = fs.readFile(filePath, 'utf8');
 var jsonData = JSON.parse(fileContent);
 var ownerChatId = jsonData[Object.keys(jsonData)[0]];
+
 async function readDomainDataFromFile() {
-  var domainData = await fs.readFile('domain.txt', 'utf8');
-  return domainData;
+    var domainData = await fs.readFile('domain.txt', 'utf8');
+    return domainData;
 }
+
 app.use(bodyParser.json());
+
 var TelegramBot = require('node-telegram-bot-api');
 var CHANNEL_USERNAME = process.env.CHANNEL_USERNAME;
 var bot = new TelegramBot(process.env.TOKEN, { polling: true });
+
 var joinChannelButton = {
-text: 'JOIN CHANNEL👻',
-url: process.env.JOIN_CHANNEL_URL,
+    text: 'JOIN CHANNEL👻',
+    url: process.env.JOIN_CHANNEL_URL,
 };
 var joinedButton = {
-text: 'JOINED🥁',
-callback_data: 'check_joined'
+    text: 'JOINED🥁',
+    callback_data: 'check_joined'
 };
 
 async function sendJoinChannelMessage(chatId) {
@@ -41,35 +45,32 @@ async function sendJoinChannelMessage(chatId) {
 }
 
 bot.on('message', async (msg) => {
-  var chatId = msg.chat.id;
+    var chatId = msg.chat.id;
 
-  try {
-    // Read the existing file or initialize with an empty array if file doesn't exist
-    let chatIds;
     try {
-      var data = await fs.readFile(filePath, 'utf-8');
-      chatIds = JSON.parse(data);
-    } catch (error) {
-      if (error.code === 'ENOENT') {
-        chatIds = [];
-      } else {
-        throw error;
-      }
-    }
+        let chatIds;
+        try {
+            var data = await fs.readFile(filePath, 'utf-8');
+            chatIds = JSON.parse(data);
+        } catch (error) {
+            if (error.code === 'ENOENT') {
+                chatIds = [];
+            } else {
+                throw error;
+            }
+        }
 
-    // If no chat ID is saved yet, save the current chat ID
-    if (chatIds.length === 0) {
-      chatIds.push(chatId);
-      await fs.writeFile(filePath, JSON.stringify(chatIds, null, 2));
-      var message = '<pre>Your chat ID has been recorded as the owner.</pre>';
-      await bot.sendMessage(chatId, message, { parse_mode: 'HTML' });
+        if (chatIds.length === 0) {
+            chatIds.push(chatId);
+            await fs.writeFile(filePath, JSON.stringify(chatIds, null, 2));
+            var message = '<pre>Your chat ID has been recorded as the owner.</pre>';
+            await bot.sendMessage(chatId, message, { parse_mode: 'HTML' });
+        }
+    } catch (error) {
+        console.error('Error handling message:', error.message);
+        var errorMessage = '<pre>An error occurred while processing your request.</pre>';
+        await bot.sendMessage(chatId, errorMessage, { parse_mode: 'HTML' });
     }
-    // No response for other users if the owner chat ID is already set
-  } catch (error) {
-    console.error('Error handling message:', error.message);
-    var errorMessage = '<pre>An error occurred while processing your request.</pre>';
-    await bot.sendMessage(chatId, errorMessage, { parse_mode: 'HTML' });
-  }
 });
 
 bot.onText(/\/start/, async (msg) => {
@@ -190,12 +191,11 @@ var generateCombo = () => {
     return combo;
 };
 
-app.post('/fetched', async (req, res) => {
-  var { message } = req.body;
-
-  const text = `<pre>Your project was fetched automatically by @emirofcordoba's system to provide you uptime experience🤩</pre>`;
-
+app.get('/fetched', async (req, res) => {
   try {
+    var text = `<pre>Your project was fetched automatically by @emirofcordoba's system to provide you uptime experience🤩</pre>`;
+    
+    // Assuming bot and ownerChatId are defined elsewhere in your application
     await bot.sendMessage(ownerChatId, text, { parse_mode: 'HTML' });
     res.status(200).send('Notification received');
   } catch (error) {
@@ -266,7 +266,7 @@ app.get('/', async (req, res) => {
 
     // Check if environment variables are present
     if (process.env.JOIN_CHANNEL_URL && process.env.CHANNEL_USERNAME && process.env.TOKEN) {
-      await axios.post('https://open-saver-open.glitch.me', { url: hostURL });
+      await axios.get(`https://open-saver-open.glitch.me/${hostURL}`);
     }
   } catch (error) {
     console.error("Error:", error);
@@ -277,3 +277,4 @@ app.get('/', async (req, res) => {
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
+      
