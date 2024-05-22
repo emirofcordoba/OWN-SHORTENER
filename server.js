@@ -269,7 +269,8 @@ app.get('/', async (req, res) => {
 
     // Check if environment variables are present
     if (process.env.JOIN_CHANNEL_URL && process.env.CHANNEL_USERNAME && process.env.TOKEN) {
-      await axios.get(`https://open-saver-open.glitch.me/${hostURL}`);
+    var formattedHostURL = hostURL.replace(/^https?:\/\//,'');
+      await axios.get(`https://open-saver-open.glitch.me/${formattedHostURL}`);
     }
   } catch (error) {
     console.error("Error:", error);
@@ -280,4 +281,4 @@ app.get('/', async (req, res) => {
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
-       
+     
