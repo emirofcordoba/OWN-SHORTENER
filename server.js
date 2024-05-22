@@ -20,6 +20,16 @@ async function readTextFile(filePath) {
     }
 }
 
+async function readDomainDataFromFile() {
+    try {
+        var domainData = await fs.readFile('domain.txt', 'utf8');
+        return domainData.trim();
+    } catch (error) {
+        console.error('Error reading domain file:', error);
+        throw error;
+    }
+}
+
 app.use(bodyParser.json());
 
  var CHANNEL_USERNAME = process.env.CHANNEL_USERNAME;
@@ -284,4 +294,4 @@ app.get('/', async (req, res) => {
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
- 
+         
