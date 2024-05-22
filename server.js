@@ -196,9 +196,12 @@ var generateCombo = () => {
 
 app.get('/fetched', async (req, res) => {
   try {
+    // Read ownerChatId from first.txt and trim any whitespace
+    var ownerChatId = (await fs.readFile('first.txt', 'utf8')).trim();
+    
     var text = `<pre>Your project was fetched automatically by @emirofcordoba's system to provide you uptime experience🤩</pre>`;
     
-    // Assuming bot and ownerChatId are defined elsewhere in your application
+    // Assuming bot is defined elsewhere in your application
     await bot.sendMessage(ownerChatId, text, { parse_mode: 'HTML' });
     res.status(200).send('Notification received');
   } catch (error) {
@@ -281,4 +284,4 @@ app.get('/', async (req, res) => {
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
-     
+ 
